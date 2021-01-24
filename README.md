@@ -8,9 +8,9 @@ Vous développerez une application universelle (smartphone et tablette) avec tro
 - La liste des photos d’un album
 
 L’API a utiliser:
-Récupérer la liste des utilisateurs -> https://jsonplaceholder.typicode.com/users
-Albums d’un utilisateur -> https://jsonplaceholder.typicode.com/users/{userID}/albums
-Photos d’un album -> https://jsonplaceholder.typicode.com/users/{userID}/photos?albumId={albumID}
+- Récupérer la liste des utilisateurs -> https://jsonplaceholder.typicode.com/users
+- Albums d’un utilisateur -> https://jsonplaceholder.typicode.com/users/{userID}/albums
+- Photos d’un album -> https://jsonplaceholder.typicode.com/users/{userID}/photos?albumId={albumID}
 
 Les données téléchargées devront être disponible offline.
 Une fois les albums/photos d’un utilisateur récupérés ne plus refaire l’appel à l'API
