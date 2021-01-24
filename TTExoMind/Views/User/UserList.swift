@@ -8,7 +8,13 @@
 import Foundation
 import UIKit
 
+protocol UserListDelegate: NSObject {
+    func userList(_ userList: UserList, didSelectUser: User)
+}
+
 class UserList: UITableView {
+    
+    weak var userDelegate: UserListDelegate?
     
     /// Liste des utilisateurs récupérés via l'appel réseau
     var users: [User] = [] {
@@ -41,6 +47,15 @@ class UserList: UITableView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        // Wrap content
+        var frame = self.frame;
+        frame.size.height = self.contentSize.height
+        self.frame = frame
+    }
 }
 
 extension UserList: UITableViewDataSource {
@@ -62,6 +77,6 @@ extension UserList: UITableViewDataSource {
 
 extension UserList: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO
+        self.userDelegate?.userList(self, didSelectUser: self.users[indexPath.row])
     }
 }

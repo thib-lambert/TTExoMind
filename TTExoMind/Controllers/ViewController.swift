@@ -26,6 +26,7 @@ class ViewController: UIViewController {
     fileprivate lazy var list: UserList = {
         let list = UserList()
         list.translatesAutoresizingMaskIntoConstraints = false
+        list.userDelegate = self
         return list
     }()
     
@@ -45,6 +46,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = UIColor.App.grey
+        self.title = "Utilisateurs"
         
         self.view.addSubview(self.loader)
         self.view.addSubview(self.searchBar)
@@ -91,7 +93,16 @@ class ViewController: UIViewController {
     }
     
     fileprivate func fetchUsers() {
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else { return }
+        func showFailAlert(_ error: Error? = nil) {
+            let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+        
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else {
+            showFailAlert()
+            return
+        }
         
         URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
             guard let strongSelf = self else { return }
@@ -109,9 +120,7 @@ class ViewController: UIViewController {
                 } catch {
                     DispatchQueue.main.async {
                         strongSelf.list.users = []
-                        let alert = UIAlertController(title: "Erreur de récupération", message: error.localizedDescription, preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                        strongSelf.present(alert, animated: true, completion: nil)
+                        showFailAlert(error)
                     }
                 }
             }
@@ -162,5 +171,13 @@ extension ViewController: UISearchBarDelegate {
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         searchBar.showsCancelButton = false
+    }
+}
+
+extension ViewController: UserListDelegate {
+    func userList(_ userList: UserList, didSelectUser: User) {
+        let vc = UserDetailVC()
+        vc.user = didSelectUser
+        self.show(vc, sender: nil)
     }
 }

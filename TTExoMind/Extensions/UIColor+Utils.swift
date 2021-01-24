@@ -21,7 +21,6 @@ extension UIColor {
     
     struct App {
         static var grey = UIColor(hex: 0xdddddd)
-        static var turquoise = UIColor(hex: 0x16697a)
         static var orange = UIColor(hex: 0xdb6400)
         static var gold = UIColor(hex: 0xffa62b)
     }

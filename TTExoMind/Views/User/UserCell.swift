@@ -26,35 +26,35 @@ class UserCell: UITableViewCell {
     fileprivate lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18)
-        label.textColor = UIColor.App.turquoise
+        label.textColor = .black
         return label
     }()
     
     fileprivate lazy var usernameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
-        label.textColor = UIColor.App.turquoise
+        label.textColor = .black
         return label
     }()
     
     fileprivate lazy var emailLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = UIColor.App.turquoise
+        label.textColor = .black
         return label
     }()
     
     fileprivate lazy var phoneLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = UIColor.App.turquoise
+        label.textColor = .black
         return label
     }()
     
     fileprivate lazy var websiteLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
-        label.textColor = UIColor.App.turquoise
+        label.textColor = .black
         return label
     }()
     
@@ -63,16 +63,15 @@ class UserCell: UITableViewCell {
         iv.translatesAutoresizingMaskIntoConstraints = false
         iv.contentMode = .scaleAspectFit
         iv.image = UIImage(named: "right-arrow")?.withRenderingMode(.alwaysTemplate)
-        iv.tintColor = .darkGray
+        iv.tintColor = .white
         return iv
     }()
     
     fileprivate lazy var wrapper: UIView = {
         let wrap = UIView()
         wrap.translatesAutoresizingMaskIntoConstraints = false
-        wrap.layer.borderWidth = 1
-        wrap.layer.borderColor = UIColor.App.orange.cgColor
         wrap.clipsToBounds = true
+        wrap.backgroundColor = UIColor.App.gold
         return wrap
     }()
     
@@ -91,7 +90,7 @@ class UserCell: UITableViewCell {
         self.selectionStyle = .none
         self.backgroundColor = UIColor.App.grey
         
-        self.addSubview(self.wrapper)
+        self.contentView.addSubview(self.wrapper)
         self.wrapper.addSubview(self.stackView)
         self.wrapper.addSubview(self.chevronImageView)
         
@@ -104,10 +103,10 @@ class UserCell: UITableViewCell {
     
     fileprivate func setupConstraints() {
         NSLayoutConstraint.activate([
-            self.wrapper.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
-            self.wrapper.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -10),
-            self.wrapper.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -10),
-            self.wrapper.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 10),
+            self.wrapper.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 10),
+            self.wrapper.rightAnchor.constraint(equalTo: self.contentView.rightAnchor, constant: -10),
+            self.wrapper.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -10),
+            self.wrapper.leftAnchor.constraint(equalTo: self.contentView.leftAnchor, constant: 10),
             
             self.stackView.topAnchor.constraint(equalTo: self.wrapper.topAnchor, constant: 10),
             self.stackView.rightAnchor.constraint(equalTo: self.wrapper.rightAnchor, constant: -40),
