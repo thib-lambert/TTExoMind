@@ -77,44 +77,60 @@ class UserDetailVC: UIViewController {
     }
     
     fileprivate func fetchAlbums() {
-        
         func showFailAlert(_ error: Error? = nil) {
             let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
         
-        guard let userId = user?.id else {
-            showFailAlert()
-            return
-        }
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(userId)/albums") else {
+        guard let user = self.user,
+              let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(user.id)/albums")
+        else {
             showFailAlert()
             return
         }
         
-        URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-            guard let strongSelf = self else { return }
-            if let data = data, error == nil {
-                do {
-                    let jsonData = try JSONDecoder().decode([Album].self, from: data)
-                    strongSelf.albums = jsonData
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                        strongSelf.loader.stopAnimating()
-                        strongSelf.loader.isHidden = true
-                        strongSelf.userDetail.isHidden = false
-                        strongSelf.list.isHidden = false
-                        strongSelf.list.albums = strongSelf.albums
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        strongSelf.list.albums = []
-                        showFailAlert(error)
+        if DiskTools.Albums.albumsAreStored(user: user) {
+            print("UserDetailVC " + #function + " from disk")
+            self.loader.stopAnimating()
+            self.loader.isHidden = true
+            self.userDetail.isHidden = false
+            self.list.isHidden = false
+            self.list.albums = DiskTools.Albums.retrieve(for: user)
+        } else {
+            print("UserDetailVC " + #function + " from network")
+            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+                guard let strongSelf = self,
+                      let user = strongSelf.user
+                else { return }
+                
+                if let data = data, error == nil {
+                    do {
+                        let jsonData = try JSONDecoder().decode([Album].self, from: data)
+                        strongSelf.albums = jsonData
+                        
+                        DiskTools.Albums.store(albums: strongSelf.albums, for: user)
+                        
+                        strongSelf.albums.forEach {
+                            $0.createFolder()
+                        }
+                        
+                        DispatchQueue.main.async {
+                            strongSelf.loader.stopAnimating()
+                            strongSelf.loader.isHidden = true
+                            strongSelf.userDetail.isHidden = false
+                            strongSelf.list.isHidden = false
+                            strongSelf.list.albums = strongSelf.albums
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            strongSelf.list.albums = []
+                            showFailAlert(error)
+                        }
                     }
                 }
-            }
-        }.resume()
+            }.resume()
+        }
     }
 }
 

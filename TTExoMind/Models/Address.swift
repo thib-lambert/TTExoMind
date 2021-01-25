@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct Address: Decodable {
+struct Address: Codable {
     
-    struct Geo: Decodable {
+    struct Geo: Codable {
         let lat: String
         let lng: String
     }

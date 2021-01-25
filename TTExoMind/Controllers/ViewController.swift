@@ -10,10 +10,10 @@ import UIKit
 class ViewController: UIViewController {
     
     /// Liste des utilisateurs récupérés via l'appel réseau
-    var users: [User] = []
+    fileprivate var users: [User] = []
     
     /// Liste des utilisateurs filtrés avec la recherche.
-    var filteredUsers: [User] = []
+    fileprivate var filteredUsers: [User] = []
     
     /// Loader pour indiquer la récupération des données
     lazy var loader: UIActivityIndicatorView = {
@@ -93,38 +93,57 @@ class ViewController: UIViewController {
     }
     
     fileprivate func fetchUsers() {
-        func showFailAlert(_ error: Error? = nil) {
-            let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
         
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else {
-            showFailAlert()
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-            guard let strongSelf = self else { return }
-            if let data = data, error == nil {
-                do {
-                    let jsonData = try JSONDecoder().decode([User].self, from: data)
-                    strongSelf.users = jsonData
-                    
-                    DispatchQueue.main.async {
-                        strongSelf.loader.stopAnimating()
-                        strongSelf.loader.isHidden = true
-                        strongSelf.list.isHidden = false
-                        strongSelf.list.users = strongSelf.users
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        strongSelf.list.users = []
-                        showFailAlert(error)
+        if DiskTools.Users.usersAreStored {
+            print("ViewController " + #function + " from disk")
+            self.users = DiskTools.Users.retrieve()
+            self.loader.stopAnimating()
+            self.loader.isHidden = true
+            self.list.isHidden = false
+            self.list.users = self.users
+        } else {
+            print("ViewController " + #function + " from network")
+            func showFailAlert(_ error: Error? = nil) {
+                let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
+            
+            guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else {
+                showFailAlert()
+                return
+            }
+            
+            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+                guard let strongSelf = self else { return }
+                if let data = data, error == nil {
+                    do {
+                        let jsonData = try JSONDecoder().decode([User].self, from: data)
+                        strongSelf.users = jsonData
+                        
+                        // Save all users in disk
+                        DiskTools.Users.store(users: strongSelf.users)
+                        
+                        // Create folder for each user
+                        strongSelf.users.forEach {
+                            $0.createFolder()
+                        }
+                        
+                        DispatchQueue.main.async {
+                            strongSelf.loader.stopAnimating()
+                            strongSelf.loader.isHidden = true
+                            strongSelf.list.isHidden = false
+                            strongSelf.list.users = strongSelf.users
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            strongSelf.list.users = []
+                            showFailAlert(error)
+                        }
                     }
                 }
-            }
-        }.resume()
+            }.resume()
+        }
     }
     
     @objc fileprivate func keyboardWillShowNotification(notification: Notification) {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct User: Decodable {
+struct User: Codable {
     let id: Int
     let name: String
     let username: String
@@ -16,4 +16,11 @@ struct User: Decodable {
     let phone: String
     let website: String
     let company: Company
+    
+    func createFolder() {
+        let destination = DiskTools.Users.usersDirectory.appendingPathComponent("user_\(self.id)")
+        if !FileManager.default.fileExists(atPath: destination.path) {
+            DiskTools.createFolder("Users/user_\(self.id)")
+        }
+    }
 }

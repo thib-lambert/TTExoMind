@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Company: Decodable {
+struct Company: Codable {
     let name: String
     let catchPhrase: String
     let bs: String

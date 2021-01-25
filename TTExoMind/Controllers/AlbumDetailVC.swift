@@ -69,38 +69,47 @@ class AlbumDetailVC: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
         
-        guard let albumId = album?.id, let userId = album?.userId else {
+        guard let album = album,
+              let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(album.userId)/photos?albumId=\(album.id)")
+        else {
             showFailAlert()
             return
         }
         
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(userId)/photos?albumId=\(albumId)") else {
-            showFailAlert()
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-            guard let strongSelf = self else { return }
-            if let data = data, error == nil {
-                do {
-                    let jsonData = try JSONDecoder().decode([Picture].self, from: data)
-                    strongSelf.pictures = jsonData
-                    
-                    DispatchQueue.main.async {
-                        strongSelf.loader.stopAnimating()
-                        strongSelf.loader.isHidden = true
-                        strongSelf.collection.isHidden = false
-                        strongSelf.collection.reloadData()
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        strongSelf.pictures = []
-                        strongSelf.collection.reloadData()
-                        showFailAlert(error)
+        if DiskTools.Pictures.picturesAreStored(album: album) {
+            print("AlbumDetailVC " + #function + " from disk")
+            self.loader.stopAnimating()
+            self.loader.isHidden = true
+            self.collection.isHidden = false
+            self.pictures = DiskTools.Pictures.retrieve(album: album)
+            self.collection.reloadData()
+        } else {
+            print("AlbumDetailVC " + #function + " from network")
+            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+                guard let strongSelf = self else { return }
+                if let data = data, error == nil {
+                    do {
+                        let jsonData = try JSONDecoder().decode([Picture].self, from: data)
+                        strongSelf.pictures = jsonData
+                        
+                        DiskTools.Pictures.store(pictures: strongSelf.pictures, for: album)
+                        
+                        DispatchQueue.main.async {
+                            strongSelf.loader.stopAnimating()
+                            strongSelf.loader.isHidden = true
+                            strongSelf.collection.isHidden = false
+                            strongSelf.collection.reloadData()
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            strongSelf.pictures = []
+                            strongSelf.collection.reloadData()
+                            showFailAlert(error)
+                        }
                     }
                 }
-            }
-        }.resume()
+            }.resume()
+        }
     }
 }
 
@@ -114,6 +123,7 @@ extension AlbumDetailVC: UICollectionViewDataSource {
         
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicutreCell.reusableIdentifier, for: indexPath) as? PicutreCell {
             cell.picture = self.pictures[indexPath.row]
+            cell.userId = self.album?.userId
             return cell
         }
         

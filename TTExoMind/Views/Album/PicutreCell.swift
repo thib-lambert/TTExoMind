@@ -17,6 +17,12 @@ class PicutreCell: UICollectionViewCell {
         }
     }
     
+    var userId: Int? {
+        didSet {
+            self.fetchPicture()
+        }
+    }
+    
     fileprivate lazy var pictureImageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
@@ -33,6 +39,7 @@ class PicutreCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
+        self.contentView.addSubview(self.loader)
         self.contentView.addSubview(self.pictureImageView)
         
         NSLayoutConstraint.activate([
@@ -44,6 +51,8 @@ class PicutreCell: UICollectionViewCell {
             self.pictureImageView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
             self.pictureImageView.leftAnchor.constraint(equalTo: self.contentView.leftAnchor)
         ])
+        
+        self.fetchPicture()
     }
     
     required init?(coder: NSCoder) {
@@ -51,21 +60,25 @@ class PicutreCell: UICollectionViewCell {
     }
     
     fileprivate func fetchPicture() {
-        guard let urlPicture = self.picture?.thumbnailUrl, let url = URL(string: urlPicture) else { return }
+        guard let picture = self.picture,
+              let url = URL(string: picture.thumbnailUrl),
+              let userId = self.userId
+        else { return }
         
-        if Tools.imageIsAlreadySave(key: urlPicture) {
-            self.pictureImageView.image = Tools.retrieveImage(key: urlPicture)
+        if DiskTools.Pictures.pictureIsStored(picture: picture, forUserId: userId) {
+            self.pictureImageView.image = DiskTools.Pictures.retrieve(picture: picture, forUserId: userId)
         } else {
             URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-                guard let strongSelf = self else { return }
+                guard let strongSelf = self,
+                    let data = data,
+                    error == nil
+                else { return }
                 
-                if let data = data, error == nil {
-                    DispatchQueue.main.async {
-                        if let image = UIImage(data: data) {
-                            strongSelf.pictureImageView.image = image
-                            Tools.storeImage(image: image, key: urlPicture)
-                        }
-                    }
+                let image = UIImage(data: data)
+                DiskTools.Pictures.save(image, picture: picture, forUserId: userId)
+                
+                DispatchQueue.main.async {
+                    strongSelf.pictureImageView.image = image
                 }
             }.resume()
         }
