@@ -29,6 +29,7 @@ class UserDetailVC: UIViewController {
         let list = AlbumList()
         list.isHidden = true
         list.translatesAutoresizingMaskIntoConstraints = false
+        list.albumDelegate = self
         return list
     }()
     
@@ -114,5 +115,13 @@ class UserDetailVC: UIViewController {
                 }
             }
         }.resume()
+    }
+}
+
+extension UserDetailVC: AlbumListDelegate {
+    func albumList(_ albumList: AlbumList, didSelectAlbum: Album) {
+        let vc = AlbumDetailVC()
+        vc.album = didSelectAlbum
+        self.show(vc, sender: nil)
     }
 }

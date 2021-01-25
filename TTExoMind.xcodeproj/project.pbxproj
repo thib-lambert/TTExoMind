@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5306F69C25BED6F2002E6189 /* PicutreCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5306F69B25BED6F2002E6189 /* PicutreCell.swift */; };
+		5306F69F25BED732002E6189 /* AlbumDetailVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5306F69E25BED732002E6189 /* AlbumDetailVC.swift */; };
+		5306F6A425BEE5C7002E6189 /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5306F6A325BEE5C7002E6189 /* Tools.swift */; };
 		534062BE25BDDF02006BA305 /* UserDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534062BD25BDDF02006BA305 /* UserDetail.swift */; };
 		534062C125BDDF1F006BA305 /* AlbumCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534062C025BDDF1F006BA305 /* AlbumCell.swift */; };
 		534062C725BDF0B6006BA305 /* AlbumList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534062C625BDF0B6006BA305 /* AlbumList.swift */; };
@@ -28,6 +31,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5306F69B25BED6F2002E6189 /* PicutreCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicutreCell.swift; sourceTree = "<group>"; };
+		5306F69E25BED732002E6189 /* AlbumDetailVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDetailVC.swift; sourceTree = "<group>"; };
+		5306F6A325BEE5C7002E6189 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		534062BD25BDDF02006BA305 /* UserDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetail.swift; sourceTree = "<group>"; };
 		534062C025BDDF1F006BA305 /* AlbumCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumCell.swift; sourceTree = "<group>"; };
 		534062C625BDF0B6006BA305 /* AlbumList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumList.swift; sourceTree = "<group>"; };
@@ -76,6 +82,7 @@
 			children = (
 				534062C025BDDF1F006BA305 /* AlbumCell.swift */,
 				534062C625BDF0B6006BA305 /* AlbumList.swift */,
+				5306F69B25BED6F2002E6189 /* PicutreCell.swift */,
 			);
 			path = Album;
 			sourceTree = "<group>";
@@ -109,6 +116,7 @@
 				53C8160325BDD471006A64BE /* Assets.xcassets */,
 				53C8160525BDD471006A64BE /* LaunchScreen.storyboard */,
 				53C8160825BDD471006A64BE /* Info.plist */,
+				5306F6A325BEE5C7002E6189 /* Tools.swift */,
 			);
 			path = TTExoMind;
 			sourceTree = "<group>";
@@ -147,6 +155,7 @@
 			children = (
 				53C815FE25BDD470006A64BE /* ViewController.swift */,
 				53C8164125BDDA6C006A64BE /* UserDetailVC.swift */,
+				5306F69E25BED732002E6189 /* AlbumDetailVC.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -225,6 +234,7 @@
 				53C815FB25BDD470006A64BE /* AppDelegate.swift in Sources */,
 				53C8163125BDD701006A64BE /* User.swift in Sources */,
 				534062C125BDDF1F006BA305 /* AlbumCell.swift in Sources */,
+				5306F69F25BED732002E6189 /* AlbumDetailVC.swift in Sources */,
 				53C8163E25BDD9C8006A64BE /* Picture.swift in Sources */,
 				53C8164225BDDA6C006A64BE /* UserDetailVC.swift in Sources */,
 				534062C725BDF0B6006BA305 /* AlbumList.swift in Sources */,
@@ -234,6 +244,8 @@
 				53C8163025BDD701006A64BE /* Company.swift in Sources */,
 				534062BE25BDDF02006BA305 /* UserDetail.swift in Sources */,
 				53C8162A25BDD6D1006A64BE /* UIColor+Utils.swift in Sources */,
+				5306F69C25BED6F2002E6189 /* PicutreCell.swift in Sources */,
+				5306F6A425BEE5C7002E6189 /* Tools.swift in Sources */,
 				53C8163225BDD701006A64BE /* Address.swift in Sources */,
 				53C8163B25BDD984006A64BE /* Album.swift in Sources */,
 			);
