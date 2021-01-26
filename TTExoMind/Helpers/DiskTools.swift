@@ -70,6 +70,14 @@ class DiskTools {
             let url = self.usersDirectory.appendingPathComponent("users.json")
             return FileManager.default.fileExists(atPath: url.path)
         }
+
+        /// Permet de créer un dossier pour un utilisateur
+        static func createFolder(forUser user: User) {
+            let destination = DiskTools.Users.usersDirectory.appendingPathComponent("user_\(user.id)")
+            if !FileManager.default.fileExists(atPath: destination.path) {
+                DiskTools.createFolder("Users/user_\(user.id)")
+            }
+        }
     }
 
     struct Albums {
@@ -108,6 +116,14 @@ class DiskTools {
         static func albumsAreStored(user: User) -> Bool {
             let url = DiskTools.documentsDirectory.appendingPathComponent("Users/user_\(user.id)/albums.json")
             return FileManager.default.fileExists(atPath: url.path)
+        }
+
+        /// Permet de créer un dossier album lié à l'utilisateur
+        static func createFolder(forAlbum album: Album) {
+            let destination = DiskTools.Users.usersDirectory.appendingPathComponent("user_\(album.userId)/album_\(album.id)")
+            if !FileManager.default.fileExists(atPath: destination.path) {
+                DiskTools.createFolder("Users/user_\(album.userId)/album_\(album.id)")
+            }
         }
     }
 

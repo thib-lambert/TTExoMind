@@ -129,7 +129,7 @@ class ViewController: UIViewController {
 
                     // Create folder for each user
                     strongSelf.users.forEach {
-                        $0.createFolder()
+                        DiskTools.Users.createFolder(forUser: $0)
                     }
 
                     showData()

@@ -23,21 +23,24 @@ class AsyncTaskJson<Result: Codable> {
         self.onPreExecute?()
 
         URLSession.shared.dataTask(with: self.url) { (data, _, error) in
-            guard let data = data,
-                error == nil
-                else { return }
-
-            do {
-                let jsonData = try JSONDecoder().decode(Result.self, from: data)
-                self.result = jsonData
-
-                DispatchQueue.main.async {
-                    self.onPostExecute?(self.result, nil)
-                }
-            } catch {
+            if let error = error {
                 DispatchQueue.main.async {
                     self.result = nil
                     self.onPostExecute?(self.result, error)
+                }
+            } else if let data = data {
+                do {
+                    let jsonData = try JSONDecoder().decode(Result.self, from: data)
+                    self.result = jsonData
+
+                    DispatchQueue.main.async {
+                        self.onPostExecute?(self.result, nil)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.result = nil
+                        self.onPostExecute?(self.result, error)
+                    }
                 }
             }
         }.resume()

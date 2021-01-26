@@ -118,7 +118,7 @@ class UserDetailVC: UIViewController {
 
                     // Create folder for each album
                     strongSelf.albums.forEach {
-                        $0.createFolder()
+                        DiskTools.Albums.createFolder(forAlbum: $0)
                     }
 
                     showData()
@@ -133,6 +133,7 @@ extension UserDetailVC: AlbumListDelegate {
     func albumList(_ albumList: AlbumList, didSelectAlbum album: Album) {
         let viewController = AlbumDetailVC()
         viewController.album = album
+        viewController.title = album.title
         self.show(viewController, sender: nil)
     }
 }
