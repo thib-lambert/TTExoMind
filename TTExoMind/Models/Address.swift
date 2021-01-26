@@ -8,12 +8,12 @@
 import Foundation
 
 struct Address: Codable {
-    
+
     struct Geo: Codable {
         let lat: String
         let lng: String
     }
-    
+
     let street: String
     let suite: String
     let city: String

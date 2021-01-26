@@ -18,7 +18,7 @@ extension UIColor {
         let blue = UInt8(hex & 0xff)
         self.init(red: red, green: green, blue: blue)
     }
-    
+
     struct App {
         static var grey = UIColor(hex: 0xdddddd)
         static var orange = UIColor(hex: 0xdb6400)

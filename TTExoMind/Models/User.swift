@@ -16,7 +16,7 @@ struct User: Codable {
     let phone: String
     let website: String
     let company: Company
-    
+
     func createFolder() {
         let destination = DiskTools.Users.usersDirectory.appendingPathComponent("user_\(self.id)")
         if !FileManager.default.fileExists(atPath: destination.path) {

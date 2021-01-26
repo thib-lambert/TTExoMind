@@ -11,26 +11,26 @@ import Foundation
 class AsyncTaskJson<Result: Codable> {
     var onPreExecute: (() -> Void)?
     var onPostExecute: ((Result?, Error?) -> Void)?
-    
+
     fileprivate var result: Result?
     fileprivate var url: URL
-    
+
     init(url: URL) {
         self.url = url
     }
-    
+
     func execute() {
         self.onPreExecute?()
-        
-        URLSession.shared.dataTask(with: self.url) { (data, response, error) in
+
+        URLSession.shared.dataTask(with: self.url) { (data, _, error) in
             guard let data = data,
-                  error == nil
-            else { return }
-            
+                error == nil
+                else { return }
+
             do {
                 let jsonData = try JSONDecoder().decode(Result.self, from: data)
                 self.result = jsonData
-                
+
                 DispatchQueue.main.async {
                     self.onPostExecute?(self.result, nil)
                 }

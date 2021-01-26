@@ -8,14 +8,14 @@
 import Foundation
 import UIKit
 
-protocol UserListDelegate: NSObject {
-    func userList(_ userList: UserList, didSelectUser: User)
+protocol UserListDelegate: class {
+    func userList(_ userList: UserList, didSelectUser user: User)
 }
 
 class UserList: UITableView {
-    
+
     weak var userDelegate: UserListDelegate?
-    
+
     /// Liste des utilisateurs récupérés via l'appel réseau
     var users: [User] = [] {
         didSet {
@@ -23,7 +23,7 @@ class UserList: UITableView {
             self.reloadData()
         }
     }
-    
+
     fileprivate lazy var listFooter: UILabel = {
         let label = UILabel()
         label.text = "\(self.users.count) " + (self.users.count > 1 ? "Utilisateurs" : "Utilisateur")
@@ -32,10 +32,10 @@ class UserList: UITableView {
         label.sizeToFit()
         return label
     }()
-    
+
     override init(frame: CGRect, style: UITableView.Style) {
         super.init(frame: frame, style: style)
-        
+
         self.backgroundColor = UIColor.App.grey
         self.dataSource = self
         self.delegate = self
@@ -43,7 +43,7 @@ class UserList: UITableView {
         self.tableFooterView = self.listFooter
         self.separatorStyle = .none
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -53,15 +53,15 @@ extension UserList: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.users.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let defaultCell = UITableViewCell()
-        
+
         if let cell = tableView.dequeueReusableCell(withIdentifier: UserCell.reusableIdentifier) as? UserCell {
             cell.user = self.users[indexPath.row]
             return cell
         }
-        
+
         return defaultCell
     }
 }

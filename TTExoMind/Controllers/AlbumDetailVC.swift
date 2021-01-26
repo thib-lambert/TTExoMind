@@ -8,18 +8,18 @@
 import UIKit
 
 class AlbumDetailVC: UIViewController {
-    
+
     var album: Album?
-    
+
     fileprivate var pictures: [Picture] = []
-    
+
     /// Loader pour indiquer la récupération des données
     lazy var loader: UIActivityIndicatorView = {
         let loader = UIActivityIndicatorView(style: .medium)
         loader.translatesAutoresizingMaskIntoConstraints = false
         return loader
     }()
-    
+
     fileprivate lazy var collection: UICollectionView = {
         let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         collection.translatesAutoresizingMaskIntoConstraints = false
@@ -30,42 +30,41 @@ class AlbumDetailVC: UIViewController {
         collection.backgroundColor = .clear
         return collection
     }()
-    
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.view.backgroundColor = UIColor.App.grey
-        
+
         self.view.addSubview(self.loader)
         self.view.addSubview(self.collection)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         self.loader.startAnimating()
         self.setupConstraints()
         self.fetchPictures()
     }
-    
+
     fileprivate func setupConstraints() {
         NSLayoutConstraint.activate([
             self.loader.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             self.loader.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-            
+
             self.collection.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.collection.rightAnchor.constraint(equalTo: self.view.rightAnchor),
             self.collection.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
             self.collection.leftAnchor.constraint(equalTo: self.view.leftAnchor)
         ])
     }
-    
+
     fileprivate func fetchPictures() {
         guard let album = album,
-              let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(album.userId)/photos?albumId=\(album.id)")
-        else { return }
-        
+            let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(album.userId)/photos?albumId=\(album.id)")
+            else { return }
+
         if DiskTools.Pictures.picturesAreStored(album: album) {
             print("AlbumDetailVC " + #function + " from disk")
             self.loader.stopAnimating()
@@ -75,30 +74,31 @@ class AlbumDetailVC: UIViewController {
             self.collection.reloadData()
         } else {
             print("AlbumDetailVC " + #function + " from network")
-            
+
             let task = AsyncTaskJson<[Picture]>(url: url)
             task.onPostExecute = { [weak self] (result, error) in
                 guard let strongSelf = self else { return }
-                
+
                 func showData() {
                     strongSelf.loader.stopAnimating()
                     strongSelf.loader.isHidden = true
                     strongSelf.collection.isHidden = false
                     strongSelf.collection.reloadData()
                 }
-                
+
                 if let error = error {
                     strongSelf.pictures = []
                     showData()
+
                     let alert = UIAlertController(title: "Erreur de récupération", message: error.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     strongSelf.present(alert, animated: true, completion: nil)
                 } else if let result = result {
                     strongSelf.pictures = result
-                    
+
                     // Save all pictures in disk
                     DiskTools.Pictures.store(pictures: strongSelf.pictures, for: album)
-                    
+
                     showData()
                 }
             }
@@ -111,16 +111,16 @@ extension AlbumDetailVC: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.pictures.count
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let defaultCell = UICollectionViewCell()
-        
+
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicutreCell.reusableIdentifier, for: indexPath) as? PicutreCell {
             cell.picture = self.pictures[indexPath.row]
             cell.userId = self.album?.userId
             return cell
         }
-        
+
         return defaultCell
     }
 }
@@ -132,11 +132,11 @@ extension AlbumDetailVC: UICollectionViewDelegateFlowLayout {
         let widthPerItem = availableWidth / itemsPerRow
         return CGSize(width: widthPerItem, height: widthPerItem)
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
