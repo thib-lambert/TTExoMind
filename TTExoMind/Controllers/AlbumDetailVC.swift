@@ -62,19 +62,9 @@ class AlbumDetailVC: UIViewController {
     }
     
     fileprivate func fetchPictures() {
-        
-        func showFailAlert(_ error: Error? = nil) {
-            let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
-        
         guard let album = album,
               let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(album.userId)/photos?albumId=\(album.id)")
-        else {
-            showFailAlert()
-            return
-        }
+        else { return }
         
         if DiskTools.Pictures.picturesAreStored(album: album) {
             print("AlbumDetailVC " + #function + " from disk")
@@ -85,30 +75,34 @@ class AlbumDetailVC: UIViewController {
             self.collection.reloadData()
         } else {
             print("AlbumDetailVC " + #function + " from network")
-            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+            
+            let task = AsyncTaskJson<[Picture]>(url: url)
+            task.onPostExecute = { [weak self] (result, error) in
                 guard let strongSelf = self else { return }
-                if let data = data, error == nil {
-                    do {
-                        let jsonData = try JSONDecoder().decode([Picture].self, from: data)
-                        strongSelf.pictures = jsonData
-                        
-                        DiskTools.Pictures.store(pictures: strongSelf.pictures, for: album)
-                        
-                        DispatchQueue.main.async {
-                            strongSelf.loader.stopAnimating()
-                            strongSelf.loader.isHidden = true
-                            strongSelf.collection.isHidden = false
-                            strongSelf.collection.reloadData()
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            strongSelf.pictures = []
-                            strongSelf.collection.reloadData()
-                            showFailAlert(error)
-                        }
-                    }
+                
+                func showData() {
+                    strongSelf.loader.stopAnimating()
+                    strongSelf.loader.isHidden = true
+                    strongSelf.collection.isHidden = false
+                    strongSelf.collection.reloadData()
                 }
-            }.resume()
+                
+                if let error = error {
+                    strongSelf.pictures = []
+                    showData()
+                    let alert = UIAlertController(title: "Erreur de récupération", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    strongSelf.present(alert, animated: true, completion: nil)
+                } else if let result = result {
+                    strongSelf.pictures = result
+                    
+                    // Save all pictures in disk
+                    DiskTools.Pictures.store(pictures: strongSelf.pictures, for: album)
+                    
+                    showData()
+                }
+            }
+            task.execute()
         }
     }
 }

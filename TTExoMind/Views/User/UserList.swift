@@ -47,15 +47,6 @@ class UserList: UITableView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        // Wrap content
-        var frame = self.frame;
-        frame.size.height = self.contentSize.height
-        self.frame = frame
-    }
 }
 
 extension UserList: UITableViewDataSource {

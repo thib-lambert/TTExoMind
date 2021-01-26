@@ -23,10 +23,13 @@ class PicutreCell: UICollectionViewCell {
         }
     }
     
+    fileprivate var task: URLSessionDataTask?
+    
     fileprivate lazy var pictureImageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
         iv.contentMode = .scaleAspectFit
+        iv.isHidden = true
         return iv
     }()
     
@@ -59,16 +62,28 @@ class PicutreCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        self.task?.cancel()
+        self.pictureImageView.image = nil
+    }
+    
     fileprivate func fetchPicture() {
+        self.loader.startAnimating()
+        
         guard let picture = self.picture,
               let url = URL(string: picture.thumbnailUrl),
               let userId = self.userId
         else { return }
         
         if DiskTools.Pictures.pictureIsStored(picture: picture, forUserId: userId) {
+            self.loader.stopAnimating()
+            self.loader.isHidden = true
+            self.pictureImageView.isHidden = false
             self.pictureImageView.image = DiskTools.Pictures.retrieve(picture: picture, forUserId: userId)
         } else {
-            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+            self.task = URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
                 guard let strongSelf = self,
                     let data = data,
                     error == nil
@@ -78,9 +93,13 @@ class PicutreCell: UICollectionViewCell {
                 DiskTools.Pictures.save(image, picture: picture, forUserId: userId)
                 
                 DispatchQueue.main.async {
+                    strongSelf.loader.stopAnimating()
+                    strongSelf.loader.isHidden = true
+                    strongSelf.pictureImageView.isHidden = false
                     strongSelf.pictureImageView.image = image
                 }
-            }.resume()
+            }
+            self.task?.resume()
         }
     }
 }

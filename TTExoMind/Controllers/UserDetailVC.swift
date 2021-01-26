@@ -77,18 +77,9 @@ class UserDetailVC: UIViewController {
     }
     
     fileprivate func fetchAlbums() {
-        func showFailAlert(_ error: Error? = nil) {
-            let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
-        
         guard let user = self.user,
               let url = URL(string: "https://jsonplaceholder.typicode.com/users/\(user.id)/albums")
-        else {
-            showFailAlert()
-            return
-        }
+        else { return }
         
         if DiskTools.Albums.albumsAreStored(user: user) {
             print("UserDetailVC " + #function + " from disk")
@@ -99,37 +90,40 @@ class UserDetailVC: UIViewController {
             self.list.albums = DiskTools.Albums.retrieve(for: user)
         } else {
             print("UserDetailVC " + #function + " from network")
-            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-                guard let strongSelf = self,
-                      let user = strongSelf.user
-                else { return }
+            
+            let task = AsyncTaskJson<[Album]>(url: url)
+            task.onPostExecute = { [weak self] (result, error) in
+                guard let strongSelf = self else { return }
                 
-                if let data = data, error == nil {
-                    do {
-                        let jsonData = try JSONDecoder().decode([Album].self, from: data)
-                        strongSelf.albums = jsonData
-                        
-                        DiskTools.Albums.store(albums: strongSelf.albums, for: user)
-                        
-                        strongSelf.albums.forEach {
-                            $0.createFolder()
-                        }
-                        
-                        DispatchQueue.main.async {
-                            strongSelf.loader.stopAnimating()
-                            strongSelf.loader.isHidden = true
-                            strongSelf.userDetail.isHidden = false
-                            strongSelf.list.isHidden = false
-                            strongSelf.list.albums = strongSelf.albums
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            strongSelf.list.albums = []
-                            showFailAlert(error)
-                        }
-                    }
+                func showData() {
+                    strongSelf.loader.stopAnimating()
+                    strongSelf.loader.isHidden = true
+                    strongSelf.userDetail.isHidden = false
+                    strongSelf.list.isHidden = false
+                    strongSelf.list.albums = strongSelf.albums
                 }
-            }.resume()
+                
+                if let error = error {
+                    strongSelf.albums = []
+                    showData()
+                    let alert = UIAlertController(title: "Erreur de récupération", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    strongSelf.present(alert, animated: true, completion: nil)
+                } else if let result = result {
+                    strongSelf.albums = result
+                    
+                    // Save all albums in disk
+                    DiskTools.Albums.store(albums: strongSelf.albums, for: user)
+                    
+                    // Create folder for each album
+                    strongSelf.albums.forEach {
+                        $0.createFolder()
+                    }
+                    
+                    showData()
+                }
+            }
+            task.execute()
         }
     }
 }

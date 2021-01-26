@@ -102,47 +102,41 @@ class ViewController: UIViewController {
             self.list.isHidden = false
             self.list.users = self.users
         } else {
+            guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else { return }
             print("ViewController " + #function + " from network")
-            func showFailAlert(_ error: Error? = nil) {
-                let alert = UIAlertController(title: "Erreur de récupération", message: error?.localizedDescription, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
-            }
             
-            guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else {
-                showFailAlert()
-                return
-            }
-            
-            URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+            let task = AsyncTaskJson<[User]>(url: url)
+            task.onPostExecute = { [weak self] (result, error) in
                 guard let strongSelf = self else { return }
-                if let data = data, error == nil {
-                    do {
-                        let jsonData = try JSONDecoder().decode([User].self, from: data)
-                        strongSelf.users = jsonData
-                        
-                        // Save all users in disk
-                        DiskTools.Users.store(users: strongSelf.users)
-                        
-                        // Create folder for each user
-                        strongSelf.users.forEach {
-                            $0.createFolder()
-                        }
-                        
-                        DispatchQueue.main.async {
-                            strongSelf.loader.stopAnimating()
-                            strongSelf.loader.isHidden = true
-                            strongSelf.list.isHidden = false
-                            strongSelf.list.users = strongSelf.users
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            strongSelf.list.users = []
-                            showFailAlert(error)
-                        }
-                    }
+                
+                func showData() {
+                    strongSelf.loader.stopAnimating()
+                    strongSelf.loader.isHidden = true
+                    strongSelf.list.isHidden = false
+                    strongSelf.list.users = strongSelf.users
                 }
-            }.resume()
+                
+                if let error = error {
+                    strongSelf.users = []
+                    showData()
+                    let alert = UIAlertController(title: "Erreur de récupération", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    strongSelf.present(alert, animated: true, completion: nil)
+                } else if let result = result {
+                    strongSelf.users = result
+                    
+                    // Save all users in disk
+                    DiskTools.Users.store(users: strongSelf.users)
+                    
+                    // Create folder for each user
+                    strongSelf.users.forEach {
+                        $0.createFolder()
+                    }
+                    
+                    showData()
+                }
+            }
+            task.execute()
         }
     }
     
